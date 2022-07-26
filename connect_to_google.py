@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import settings
 import vision
 
+
 def get_course():
     # актуальный курс валюты по данным ЦБ с сайта ЦБ
     url = urlopen('https://cbr.ru/')
@@ -16,7 +17,7 @@ def get_course():
 def connect_to_google_sheets():
     try:
         # подкючение к Google Sheets API при помощи ключа в .json
-        connect_to_sheets = gspread.service_account(filename=settings.filename_serv_akk)
+        connect_to_sheets = gspread.service_account(filename=settings.filename_test)
         open_sheets = connect_to_sheets.open("testTask")
         wks = open_sheets.worksheet("sheet1")
         all_val = wks.get_all_values()
