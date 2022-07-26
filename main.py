@@ -9,12 +9,29 @@ import gspread
 import pandas as pd
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-import psycopg2
+from psycopg2 import Error, connect
 import csv
 import settings
 import threading
 import os
 from mysql.connector import connect, Error
+
+chose = str()
+
+
+def connect_to_postgree():
+    try:
+        connection = connect(
+            dbname=settings.dbname,
+            user=settings.user,
+            password=settings.password,
+            host=settings.host)
+
+        return connection
+
+    except Error as e:
+        print(f"[ERROR] Не удалось установить соединение с БД {e}")
+        print("[ERROR] ошибка в функции *** connect_to_postgre")
 
 
 def connect_to_mysql():
@@ -24,6 +41,7 @@ def connect_to_mysql():
                 user=settings.username_mysql,
                 password=settings.psw)
         return connection
+
     except Error as e:
         print(f"[ERROR] Не удалось установить соединение с БД {e}")
         print("[ERROR] ошибка в методе *** connect_to_mysql")
@@ -110,15 +128,35 @@ def connect_to_google_sheets():
 
 
 def main():
+
     try:
+
+        while(True):
+            try:
+                chose = input("Выберете способ подключения к БД: \n# 1 - MySQL #   \n# 2 - PostgreSQL\n")
+
+                if ('1' in chose) or ('2' in chose):
+                    break
+                else:
+                    print("Выберете 1 или 2")
+            except KeyboardInterrupt:
+                print("[ИНФО] ПРЕРВАНО ПОЛЬЗОВАТЕЛЕМ")
+
+        print("[ИНФО] Получаю данные из рабочего листа")
         connect_to_google_sheets()
+
         while(True):
             task0 = threading.Timer(60.0, connect_to_google_sheets)
             task0.start()
             connection = connect_to_mysql()
-            # connection = psycopg2.connect(dbname=settings.dbname, user=settings.user, password=settings.password,
-            #                               host=settings.host)
-            connection.autocommit = True
+
+            if chose == '1':
+                connection = connect_to_mysql()
+                connection.autocommit = True
+            if chose == '2':
+                connection = connect_to_postgree()
+                connection.autocommit = True
+
             create_table(connection)
             print("[INFO] Создали таблицу")
             # insert_table(connection)
@@ -132,6 +170,8 @@ def main():
         print(f"[ERROR] Ошибка в функции main() *** {e}")
 
     finally:
+        if KeyboardInterrupt:
+            print("[ИНФО] ПРЕРВАНО ПОЛЬЗОВАТЕЛЕМ")
         # if connection:
         #     connection.close()
             print("[INFO] Finally method")
