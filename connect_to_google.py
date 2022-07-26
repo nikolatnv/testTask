@@ -3,6 +3,7 @@ import pandas as pd
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import settings
+import vision
 
 def get_course():
     # актуальный курс валюты по данным ЦБ с сайта ЦБ
@@ -41,6 +42,17 @@ def connect_to_google_sheets():
 
         # запись файла в .csv
         data.to_csv('testRes.csv', index=False)
+        chose = input("Вывести диграмму? y/n...\n")
+
+        while(True):
+            if 'y' in chose:
+                vision.vision_price()
+                break
+            elif 'n' in chose:
+                print("Жаль, я старался.")
+                break
+            else:
+                print("Сделайте выбор.")
 
     except Exception as e:
         print(f"[ERROR] Ошибка в функции connect_to_google_sheets() *** {e}")
