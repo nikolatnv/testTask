@@ -9,42 +9,13 @@ import gspread
 import pandas as pd
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-from psycopg2 import Error, connect
 import csv
 import settings
 import threading
 import os
-from mysql.connector import connect, Error
+import connectiondb
 
 chose = str()
-
-
-def connect_to_postgree():
-    try:
-        connection = connect(
-            dbname=settings.dbname,
-            user=settings.user,
-            password=settings.password,
-            host=settings.host)
-
-        return connection
-
-    except Error as e:
-        print(f"[ERROR] Не удалось установить соединение с БД {e}")
-        print("[ERROR] ошибка в функции *** connect_to_postgre")
-
-
-def connect_to_mysql():
-    try:
-        connection = connect(
-                host=settings.host_mysql,
-                user=settings.username_mysql,
-                password=settings.psw)
-        return connection
-
-    except Error as e:
-        print(f"[ERROR] Не удалось установить соединение с БД {e}")
-        print("[ERROR] ошибка в методе *** connect_to_mysql")
 
 
 def insert_to_mysql(cur, sql, args, connection):
@@ -59,7 +30,7 @@ def get_item(connection):
     with open("testRes.csv", "r", encoding='utf-8') as f:
         reader = csv.reader(f)
         next(reader)
-        conn = connect_to_mysql()
+        conn = connectiondb.connect_to_mysql()
         cursor = conn.cursor()
         for item in reader:
             args = tuple(item)
@@ -148,13 +119,12 @@ def main():
         while(True):
             task0 = threading.Timer(60.0, connect_to_google_sheets)
             task0.start()
-            connection = connect_to_mysql()
 
             if chose == '1':
-                connection = connect_to_mysql()
+                connection = connectiondb.connect_to_mysql()
                 connection.autocommit = True
             if chose == '2':
-                connection = connect_to_postgree()
+                connection = connectiondb.connect_to_postgree()
                 connection.autocommit = True
 
             create_table(connection)
